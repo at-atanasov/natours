@@ -3,23 +3,13 @@ const express = require('express');
 
 const app = express();
 
-// app.get('/', (req, res) => {
-//   res
-//     .status(200)
-//     .json({ message: 'HEllo from the server side!', app: 'Natours' });
-// });
-
-// app.post('/', (req, res) => {
-//   res.status(200).send('You can post to this endpoint...');
-// });
-
 const tours = JSON.parse(
   fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`)
 );
 
 app.use(express.json()); //middleware(can modify the incoming request data). Parses to JSON.
 
-app.get('/api/v1/tours', (req, res) => {
+const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'succes',
     results: tours.length,
@@ -27,9 +17,9 @@ app.get('/api/v1/tours', (req, res) => {
       tours, // тъй като името на пропъртито съвпада с това на променливата не е необходимо да я посочваме
     },
   });
-});
+};
 
-app.get('/api/v1/tours/:id', (req, res) => {
+const getTour = (req, res) => {
   //добавяме параметърът по този начин, после го достъпваме с req.params като обект напр. { id: '9' }
   console.log(req.params);
 
@@ -49,9 +39,9 @@ app.get('/api/v1/tours/:id', (req, res) => {
       tour, // тъй като името на пропъртито съвпада с това на променливата не е необходимо да я посочваме
     },
   });
-});
+};
 
-app.post('/api/v1/tours', (req, res) => {
+const createTour = (req, res) => {
   //   console.log(req.body);
 
   const newId = tours[tours.length - 1].id + 1;
@@ -70,9 +60,9 @@ app.post('/api/v1/tours', (req, res) => {
       });
     }
   );
-});
+};
 
-app.patch('/api/v1/tours/:id', (req, res) => {
+const updateTour = (req, res) => {
   if (req.params.id * 1 > tours.length) {
     return res.status(404).json({
       status: 'fail',
@@ -86,9 +76,9 @@ app.patch('/api/v1/tours/:id', (req, res) => {
       tour: '<updated tour here ...>',
     },
   });
-});
+};
 
-app.delete('/api/v1/tours/:id', (req, res) => {
+const deleteTour = (req, res) => {
   if (req.params.id * 1 > tours.length) {
     return res.status(404).json({
       status: 'fail',
@@ -100,7 +90,20 @@ app.delete('/api/v1/tours/:id', (req, res) => {
     status: 'success',
     data: null, // we send null in order to show that the object no longer exist
   });
-});
+};
+
+// app.get('/api/v1/tours', getAllTours);
+// app.get('/api/v1/tours/:id', getTour);
+// app.post('/api/v1/tours', createTour);
+// app.patch('/api/v1/tours/:id', updateTour);
+// app.delete('/api/v1/tours/:id', deleteTour);
+
+app.route('/api/v1/tours').get(getAllTours).post(createTour);
+app
+  .route('/api/v1/tours/:id')
+  .get(getTour)
+  .patch(updateTour)
+  .delete(deleteTour);
 
 const port = 3000;
 app.listen(port, () => {
