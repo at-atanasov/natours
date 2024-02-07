@@ -9,10 +9,22 @@ const tours = JSON.parse(
 
 app.use(express.json()); //middleware(can modify the incoming request data). Parses to JSON.
 
+app.use((req, res, next) => {
+  console.log('Hello from the middleware!!! 💀');
+  next();
+});
+
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
+  console.log(req.requestTime);
+  next();
+});
+
 const getAllTours = (req, res) => {
   res.status(200).json({
     status: 'succes',
     results: tours.length,
+    requestTime: req.requestTime,
     data: {
       tours, // тъй като името на пропъртито съвпада с това на променливата не е необходимо да я посочваме
     },
