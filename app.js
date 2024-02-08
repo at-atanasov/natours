@@ -10,6 +10,8 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json()); //middleware(can modify the incoming request data). Parses to JSON.
 
+app.use(express.static(`${__dirname}/public`)); //serving static files from folder
+
 app.use((req, res, next) => {
   console.log('Hello from the middleware!!! 💀');
   next();
