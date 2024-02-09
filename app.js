@@ -7,7 +7,9 @@ const userRouter = require('./routes/userRoutes');
 const app = express();
 
 //1 Middlewares
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
 app.use(express.json()); //middleware(can modify the incoming request data). Parses to JSON.
 
 app.use(express.static(`${__dirname}/public`)); //serving static files from folder
