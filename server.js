@@ -36,6 +36,21 @@ const tourSchema = new mongoose.Schema({
 
 const Tour = mongoose.model('Tour', tourSchema); //Creating new model based on tourSchema. Model names begin with capital letter(convention).
 
+const testTour = new Tour({
+  name: 'The park camper',
+  rating: 4.7,
+  price: 497,
+});
+
+testTour
+  .save()
+  .then((doc) => {
+    console.log(doc);
+  })
+  .catch((err) => {
+    console.log('ERROR ☠️ :', err);
+  });
+
 //console.log(process.env);
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
