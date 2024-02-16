@@ -18,39 +18,6 @@ mongoose
     console.log('DB connection successfull');
   });
 
-const tourSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, 'A tour must have a name'], //the second is error string in case there is no value vor this property
-    unique: true,
-  },
-  rating: {
-    type: Number,
-    default: 4.5, // default value
-  },
-  price: {
-    type: Number,
-    required: [true, 'A tour must have a price'],
-  },
-});
-
-const Tour = mongoose.model('Tour', tourSchema); //Creating new model based on tourSchema. Model names begin with capital letter(convention).
-
-const testTour = new Tour({
-  name: 'The park camper',
-  rating: 4.7,
-  price: 497,
-});
-
-testTour
-  .save()
-  .then((doc) => {
-    console.log(doc);
-  })
-  .catch((err) => {
-    console.log('ERROR ☠️ :', err);
-  });
-
 //console.log(process.env);
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
