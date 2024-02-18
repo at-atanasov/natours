@@ -4,31 +4,48 @@ const Tour = require('./../models/tourModel');
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
 // );
 
-exports.getAllTours = (req, res) => {
-  res.status(200).json({
-    status: 'succes',
-    // results: tours.length,
-    // requestTime: req.requestTime,
-    // data: {
-    //   tours, // тъй като името на пропъртито съвпада с това на променливата не е необходимо да я посочваме
-    // },
-  });
+exports.getAllTours = async (req, res) => {
+  try {
+    const tours = await Tour.find(); // if we do not pass parameter it will return all the document from that collection
+
+    console.log(tours);
+    res.status(200).json({
+      status: 'succes',
+      results: tours.length,
+      data: {
+        tours, // тъй като името на пропъртито съвпада с това на променливата не е необходимо да я посочваме
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 };
 
-exports.getTour = (req, res) => {
+exports.getTour = async (req, res) => {
   //добавяме параметърът по този начин, после го достъпваме с req.params като обект напр. { id: '9' }
   console.log(req.params);
 
-  const id = req.params.id * 1; // това е добър трик за превръщането на стринг в число
+  try {
+    //const id = req.params.id * 1; // това е добър трик за превръщането на стринг в число
+    const tour = await Tour.findById(req.params.id);
+    // Tour.findOne({_id : req.params.is})
+    res.status(200).json({
+      status: 'succes',
+      data: {
+        tour, // тъй като името на пропъртито съвпада с това на променливата не е необходимо да я посочваме
+      },
+    });
+  } catch (err) {
+    res.status(404).json({
+      status: 'fail',
+      message: err,
+    });
+  }
 
   // const tour = tours.find((el) => el.id === id);
-
-  // res.status(200).json({
-  //   status: 'succes',
-  //   data: {
-  //     tour, // тъй като името на пропъртито съвпада с това на променливата не е необходимо да я посочваме
-  //   },
-  // });
 };
 
 exports.createTour = async (req, res) => {
