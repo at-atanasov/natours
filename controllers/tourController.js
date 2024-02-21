@@ -6,9 +6,34 @@ const Tour = require('./../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
-    const tours = await Tour.find(); // if we do not pass parameter it will return all the document from that collection
+    console.log(req.query);
 
-    console.log(tours);
+    const queryObj = { ...req.query }; // деструктурираме рикуеста и създаваме нов обект с полетата му
+    const excludedFields = ['page', 'sort', 'limit', 'fields']; // създаваме масив с полетата, които искаме да избегнем
+    excludedFields.forEach((el) => delete queryObj[el]); // с форийч обикаляме полетата и ги изтриваме от обекта ако ги има
+
+    //BUILD QUERY
+    const query = Tour.find(queryObj);
+    console.log(queryObj);
+    //const tours = await Tour.find(req.query); // по този начин търсим с query параметри които подава в заявката
+
+    // const tours = await Tour.find(); // if we do not pass parameter it will return all the document from that collection
+
+    // const tours = await Tour.find({ // One way of writing query
+    //   duration: 5,
+    //   difficulty: 'easy,
+    // });
+
+    // const tours = await Tour.find()
+    //   .where('duration')
+    //   .equals(5)
+    //   .where('difficulty')
+    //   .equals('easy'); //another way ot writing query by chaining mongoose methods.
+
+    //EXECUTE QUERY
+    const tours = await query;
+
+    //SEND RESPONSE
     res.status(200).json({
       status: 'succes',
       results: tours.length,
