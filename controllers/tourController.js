@@ -6,14 +6,19 @@ const Tour = require('./../models/tourModel');
 
 exports.getAllTours = async (req, res) => {
   try {
+    //BUILD QUERY
+    // 1) Filtering
     console.log(req.query);
 
     const queryObj = { ...req.query }; // деструктурираме рикуеста и създаваме нов обект с полетата му
     const excludedFields = ['page', 'sort', 'limit', 'fields']; // създаваме масив с полетата, които искаме да избегнем
     excludedFields.forEach((el) => delete queryObj[el]); // с форийч обикаляме полетата и ги изтриваме от обекта ако ги има
 
-    //BUILD QUERY
-    const query = Tour.find(queryObj);
+    // 2) Advanced filtering
+    let queryStr = JSON.stringify(queryObj);
+    queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
+
+    const query = Tour.find(JSON.parse(queryStr));
     console.log(queryObj);
     //const tours = await Tour.find(req.query); // по този начин търсим с query параметри които подава в заявката
 
