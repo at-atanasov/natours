@@ -7,18 +7,18 @@ const Tour = require('./../models/tourModel');
 exports.getAllTours = async (req, res) => {
   try {
     //BUILD QUERY
-    // 1) Filtering
+    // 1A) Filtering
     console.log(req.query);
 
     const queryObj = { ...req.query }; // деструктурираме рикуеста и създаваме нов обект с полетата му
     const excludedFields = ['page', 'sort', 'limit', 'fields']; // създаваме масив с полетата, които искаме да избегнем
     excludedFields.forEach((el) => delete queryObj[el]); // с форийч обикаляме полетата и ги изтриваме от обекта ако ги има
 
-    // 2) Advanced filtering
+    // 1B) Advanced filtering
     let queryStr = JSON.stringify(queryObj);
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
 
-    const query = Tour.find(JSON.parse(queryStr));
+    let query = Tour.find(JSON.parse(queryStr));
     console.log(queryObj);
     //const tours = await Tour.find(req.query); // по този начин търсим с query параметри които подава в заявката
 
@@ -35,6 +35,15 @@ exports.getAllTours = async (req, res) => {
     //   .where('difficulty')
     //   .equals('easy'); //another way ot writing query by chaining mongoose methods.
 
+    // 2) SORTING
+    const sortBy = req.query.sort.split(',').join(' ');
+    if (req.query.sort) {
+      query = query.sort(sortBy); // ако искаме да ги сортираме низходящо слагме "-" пред името на полето в постман
+      //ако искаме да сортираме по второ поле в случай ще стойността в първото е еднаква, подаваме второто поле със запетая след първото в постман.
+      //След това я заменяме със спейс за mongoose.
+    } else {
+      query = req.query.sort('-createdAt'); //we use as default sort
+    }
     //EXECUTE QUERY
     const tours = await query;
 
