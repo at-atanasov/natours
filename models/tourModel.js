@@ -49,6 +49,7 @@ const tourSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now(),
+    select: false, //така крием полето и то не се връща при селекция. Полезно е като не искаме потребителите а виждат някаква информация.
   },
   startDates: [Date],
 });

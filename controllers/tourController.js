@@ -44,16 +44,28 @@ exports.getAllTours = async (req, res) => {
     } else {
       query = query.sort('-createdAt'); //we use as default sort
     }
+
     // 3) FIELD LIMITING
     if (req.query.fields) {
-      console.log(1);
       const fields = req.query.fields.split(',').join(' ');
       query = query.select(fields);
-      console.log(query);
     } else {
       query = query.select('-__v'); //we exclude that field. It is created by mongoose by default.
-      console.log(query);
     }
+
+    // 4) PAGINATION
+
+    const page = req.query.page * 1 || 1; // като умножаваме по 1 превръщаме стринга в число. След '||' стои дефолтна стойност.
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip >= numTours) throw new Error('This page does not exists!');
+    }
+
     //EXECUTE QUERY
     const tours = await query;
 
@@ -66,7 +78,6 @@ exports.getAllTours = async (req, res) => {
       },
     });
   } catch (err) {
-    console.log(err);
     res.status(404).json({
       status: 'fail',
       message: err,
