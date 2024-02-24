@@ -19,7 +19,6 @@ exports.getAllTours = async (req, res) => {
     queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
 
     let query = Tour.find(JSON.parse(queryStr));
-    console.log(queryObj);
     //const tours = await Tour.find(req.query); // по този начин търсим с query параметри които подава в заявката
 
     // const tours = await Tour.find(); // if we do not pass parameter it will return all the document from that collection
@@ -36,13 +35,24 @@ exports.getAllTours = async (req, res) => {
     //   .equals('easy'); //another way ot writing query by chaining mongoose methods.
 
     // 2) SORTING
-    const sortBy = req.query.sort.split(',').join(' ');
+
     if (req.query.sort) {
+      const sortBy = req.query.sort.split(',').join(' ');
       query = query.sort(sortBy); // ако искаме да ги сортираме низходящо слагме "-" пред името на полето в постман
       //ако искаме да сортираме по второ поле в случай ще стойността в първото е еднаква, подаваме второто поле със запетая след първото в постман.
       //След това я заменяме със спейс за mongoose.
     } else {
-      query = req.query.sort('-createdAt'); //we use as default sort
+      query = query.sort('-createdAt'); //we use as default sort
+    }
+    // 3) FIELD LIMITING
+    if (req.query.fields) {
+      console.log(1);
+      const fields = req.query.fields.split(',').join(' ');
+      query = query.select(fields);
+      console.log(query);
+    } else {
+      query = query.select('-__v'); //we exclude that field. It is created by mongoose by default.
+      console.log(query);
     }
     //EXECUTE QUERY
     const tours = await query;
@@ -56,6 +66,7 @@ exports.getAllTours = async (req, res) => {
       },
     });
   } catch (err) {
+    console.log(err);
     res.status(404).json({
       status: 'fail',
       message: err,
