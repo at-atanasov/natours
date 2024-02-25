@@ -1,3 +1,4 @@
+const APIFeatures = require('../utils/apiFeatures');
 const Tour = require('./../models/tourModel');
 
 // const tours = JSON.parse(
@@ -12,68 +13,13 @@ exports.aliasTopTours = async (req, res, next) => {
 
 exports.getAllTours = async (req, res) => {
   try {
-    //BUILD QUERY
-    // 1A) Filtering
-    console.log(req.query);
-
-    const queryObj = { ...req.query }; // деструктурираме рикуеста и създаваме нов обект с полетата му
-    const excludedFields = ['page', 'sort', 'limit', 'fields']; // създаваме масив с полетата, които искаме да избегнем
-    excludedFields.forEach((el) => delete queryObj[el]); // с форийч обикаляме полетата и ги изтриваме от обекта ако ги има
-
-    // 1B) Advanced filtering
-    let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gt|gte|lt|lte)\b/g, (match) => `$${match}`);
-
-    let query = Tour.find(JSON.parse(queryStr));
-    //const tours = await Tour.find(req.query); // по този начин търсим с query параметри които подава в заявката
-
-    // const tours = await Tour.find(); // if we do not pass parameter it will return all the document from that collection
-
-    // const tours = await Tour.find({ // One way of writing query
-    //   duration: 5,
-    //   difficulty: 'easy,
-    // });
-
-    // const tours = await Tour.find()
-    //   .where('duration')
-    //   .equals(5)
-    //   .where('difficulty')
-    //   .equals('easy'); //another way ot writing query by chaining mongoose methods.
-
-    // 2) SORTING
-
-    if (req.query.sort) {
-      const sortBy = req.query.sort.split(',').join(' ');
-      query = query.sort(sortBy); // ако искаме да ги сортираме низходящо слагме "-" пред името на полето в постман
-      //ако искаме да сортираме по второ поле в случай ще стойността в първото е еднаква, подаваме второто поле със запетая след първото в постман.
-      //След това я заменяме със спейс за mongoose.
-    } else {
-      query = query.sort('-createdAt'); //we use as default sort
-    }
-
-    // 3) FIELD LIMITING
-    if (req.query.fields) {
-      const fields = req.query.fields.split(',').join(' ');
-      query = query.select(fields);
-    } else {
-      query = query.select('-__v'); //we exclude that field. It is created by mongoose by default.
-    }
-
-    // 4) PAGINATION
-
-    const page = req.query.page * 1 || 1; // като умножаваме по 1 превръщаме стринга в число. След '||' стои дефолтна стойност.
-    const limit = req.query.limit * 1 || 100;
-    const skip = (page - 1) * limit;
-
-    query = query.skip(skip).limit(limit);
-
-    if (req.query.page) {
-      const numTours = await Tour.countDocuments();
-      if (skip >= numTours) throw new Error('This page does not exists!');
-    }
-
     //EXECUTE QUERY
-    const tours = await query;
+    const features = new APIFeatures(Tour.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate(); // returns promise
+    const tours = await features.query;
 
     //SEND RESPONSE
     res.status(200).json({
@@ -84,6 +30,7 @@ exports.getAllTours = async (req, res) => {
       },
     });
   } catch (err) {
+    console.log(err);
     res.status(404).json({
       status: 'fail',
       message: err,
