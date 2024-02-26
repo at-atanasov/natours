@@ -55,6 +55,10 @@ const tourSchema = new mongoose.Schema(
       select: false, //така крием полето и то не се връща при селекция. Полезно е като не искаме потребителите а виждат някаква информация.
     },
     startDates: [Date],
+    secretTour: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     toJSON: { virtuals: true }, //така маркираме, че искаме виртуалните пропъртита да се виждат при JSON и Обект
@@ -70,6 +74,22 @@ tourSchema.virtual('durationWeeks').get(function () {
 // DOCUMENT MIDDLEWARE: runs before .save() and .create()
 tourSchema.pre('save', function (next) {
   this.slug = slugify(this.name, { lower: true });
+  next();
+});
+
+// QUERY MIDDLEWARE
+
+//tourSchema.pre('find', function (next) { //pre hook/ pre find middleware is executed before the find method from tourController.js line 17 for example
+tourSchema.pre(/^find/, function (next) {
+  //here we have regular expression for strings that start with 'find'
+  this.find({ secretTour: { $ne: true } });
+  this.start = Date.now();
+  next();
+});
+
+tourSchema.post(/^find/, function (docs, next) {
+  console.log(`Query took ${Date.now() - this.start} milliseconds!`);
+  console.log(docs);
   next();
 });
 
