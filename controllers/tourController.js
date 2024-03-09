@@ -1,6 +1,7 @@
 const APIFeatures = require('../utils/apiFeatures');
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
+const AppError = require('./../utils/appError');
 // const tours = JSON.parse(
 //   fs.readFileSync(`${__dirname}/../dev-data/data/tours-simple.json`),
 // );
@@ -36,7 +37,12 @@ exports.getTour = catchAsync(async (req, res, next) => {
 
   //const id = req.params.id * 1; // това е добър трик за превръщането на стринг в число
   const tour = await Tour.findById(req.params.id);
-  // Tour.findOne({_id : req.params.is})
+  // Tour.findOne({_id : req.params.id})
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(200).json({
     status: 'succes',
     data: {
@@ -76,6 +82,11 @@ exports.updateTour = catchAsync(async (req, res, next) => {
     runValidators: true,
   });
   // {new: true} показва, че искаме да върнем ъпдейтнатия документ. Детайли в документацията на mongoose.
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(200).json({
     status: 'success',
     data: {
@@ -85,7 +96,12 @@ exports.updateTour = catchAsync(async (req, res, next) => {
 });
 
 exports.deleteTour = catchAsync(async (req, res, next) => {
-  await Tour.findByIdAndDelete(req.params.id);
+  const tour = await Tour.findByIdAndDelete(req.params.id);
+
+  if (!tour) {
+    return next(new AppError('No tour found with that ID', 404));
+  }
+
   res.status(204).json({
     status: 'success',
     data: null, // we send null in order to show that the object no longer exist
